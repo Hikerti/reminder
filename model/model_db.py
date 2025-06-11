@@ -1,7 +1,10 @@
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker;
+from ..config.config import Config, load_config
 
 Base = declarative_base()
+
+config: Config = load_config() 
 
 class User(Base):
     __tablename__ = 'users'
@@ -15,7 +18,7 @@ class User(Base):
     login_user = Column(String)
     password_user = Column(String)
 
-engine = create_engine('postgresql+psycopg2://postgres:Roman13_D14AR@localhost:5432/reminder_bot')    
+engine = create_engine(config.tg_bot.db_url)    
 
 Base.metadata.create_all(engine)
 
