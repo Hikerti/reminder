@@ -4,6 +4,13 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '...')))
+
+from model.model_db import create_user_from_dict
+from keyboards.keyboard_user import keyboards_user_create, keyboards_user_finily
 
 router = Router()
 
@@ -13,6 +20,15 @@ class RegistrationState(StatesGroup):
     age_user = State()
     login_user = State()
     password_user = State()
+
+class User:
+    tg_id: int
+    username: str
+    name_user: str
+    surname_user: str
+    age_user: int
+    login_user: str 
+    password_user: str  
 
 @router.message(Command(commands='registration'))
 async def user_registration(message: Message, state: FSMContext):
@@ -27,7 +43,8 @@ async def create_name_user(message: Message, state: FSMContext):
     
     await state.update_data(name_user=message.text, username=message.from_user.username, tg_id=message.from_user.id)
     await state.set_state(RegistrationState.surname_user)
-    await message.answer('Имя введено правильно, введите фамилию')
+
+    await message.answer('Имя введено правильно, введите фамилию', reply_markup=keyboards_user_create)
 
 @router.message(RegistrationState.surname_user)
 async def create_surname_user(message: Message, state: FSMContext):
@@ -37,7 +54,8 @@ async def create_surname_user(message: Message, state: FSMContext):
     
     await state.update_data(surname_user=message.text)
     await state.set_state(RegistrationState.age_user)
-    await message.answer('Фамилия введено правильно, введите возрост');
+
+    await message.answer('Фамилия введено правильно, введите возрост', reply_markup=keyboards_user_create);
 
 @router.message(RegistrationState.age_user)
 async def create_age_user(message: Message, state: FSMContext):
@@ -53,7 +71,7 @@ async def create_age_user(message: Message, state: FSMContext):
     
     await state.update_data(age_user=age)
     await state.set_state(RegistrationState.login_user)
-    await message.answer('Возрост введено правильно, введите логин');
+    await message.answer('Возрост введено правильно, введите логин', reply_markup=keyboards_user_create);
 
 @router.message(RegistrationState.login_user)
 async def create_login_user(message: Message, state: FSMContext):
@@ -62,7 +80,7 @@ async def create_login_user(message: Message, state: FSMContext):
     
     await state.update_data(login_user=message.text)
     await state.set_state(RegistrationState.password_user)
-    await message.answer('Логин введено правильно, введите пароль');
+    await message.answer('Логин введено правильно, введите пароль', reply_markup=keyboards_user_create);
 
 @router.message(RegistrationState.password_user)
 async def create_password_user(message: Message, state: FSMContext):
@@ -83,20 +101,15 @@ async def create_password_user(message: Message, state: FSMContext):
         "Вы подтверждаете регистрацию?"
     )
 
-    keybords = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Отправить', callback_data='confirm_registration')],
-        [InlineKeyboardButton(text='Отмена', callback_data='cancel_registration')]
-    ])
-
-    await message.answer(text, reply_markup=keybords)
+    await message.answer(text, reply_markup=keyboards_user_finily)
 
 @router.callback_query(lambda c: c.data in ['confirm_registration', 'cancel_registration'])
 async def process_callback_registration(callback: CallbackQuery, state: FSMContext):
     if callback.data == 'confirm_registration':
-        data = await state.get_data()
+        data: User = await state.get_data()
+        create_user_from_dict(data)
 
         await callback.message.edit_text(f'Регистрация прошла успешно! {data}')
-        
     else: 
         await callback.message.edit_text('Регистрация отменена')
     

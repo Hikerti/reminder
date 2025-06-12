@@ -1,6 +1,13 @@
 from aiogram import Router
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
+
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '...')))
+
+from keyboards.keyboard_user import keyboards_cancel_session
 
 router = Router()
 
@@ -8,16 +15,11 @@ router = Router()
 async def start_user_no_registration(message: Message):
     await message.answer('Привет, друг!\n\n'
                          'Тебя приветствует Reminder бот, я умею составлять запоминалки. Зарегистрируйся и мы начнём.\n\n'
-                         'Команда для регестрации /registration');
+                         'Команда для регистрации /registration');
 
 @router.message(Command(commands='cancel'))
 async def cancel_user_no_registration(message: Message):
-    keybords = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Да, уверен', callback_data='cancel_session')],
-        [InlineKeyboardButton(text='Нет, я остаюсь', callback_data='no_cancel_session')]
-    ])
-
-    await message.answer('Вы точно хотите выйти из бота?', reply_markup=keybords);
+    await message.answer('Вы точно хотите выйти из бота?', reply_markup=keyboards_cancel_session);
 
 @router.callback_query(lambda c: c.data in ['cancel_session', 'no_cancel_session'])
 async def callback_cancel_session(callback: CallbackQuery):
