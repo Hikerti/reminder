@@ -23,16 +23,16 @@ class User(Base):
     login_user = Column(String)
     password_user = Column(String)
 
-class Task(Base):
-    __tablename__ = 'tasks'
+class Tasks(Base):
+    __tablename__ = 'tasks_user'
     
     id = Column(Integer, primary_key=True)
-    id_task = Column(Integer)
     id_user = Column(Integer)
     title = Column(String)
     description = Column(String)    
 
 engine = create_engine(config.tg_bot.db_url, echo=True)  
+Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session();    
@@ -42,11 +42,52 @@ def create_user_from_dict(data: dict):
     session.add(user)
     session.commit()
 
+def get_user(user_id):
+    return session.query(User).filter(User.tg_id == user_id).first()    
+
+def delete_user(user_id: int):
+    user = session.query(User).filter(User.tg_id == user_id).first()
+    if user:
+        session.delete(user)
+        session.commit()
+        return True
+    return False        
+
+def get_task_first(id: int):
+    return session.query(Tasks).filter(Tasks.id == id).first()
+
+def get_task_all(user_id: int):
+    return session.query(Tasks).filter(Tasks.id_user == user_id).all()
+
 def create_task_from_dict(data: dict):
-    task = Task(**data)
+    task = Tasks(**data)
     session.add(task)
     session.commit()
 
 def view_tasks(user_id: int):
-    tasks = session.query(Task).filter(Task.id_user == user_id).all()
+    tasks = get_task_all(user_id)
     return tasks
+
+def delete_tasks(id: int):
+    task = get_task_first(id)
+    if (task):
+        session.delete(task)
+        session.commit()
+        return True
+    return False    
+
+def update_task_title (id: int, title_text: str):
+    task = get_task_first(id)
+    if task: 
+        task.title = title_text
+        session.commit()
+        return True
+    return False
+
+def update_task_description (id: int, description_text: str):
+    task = get_task_first(id)
+    if task: 
+        task.description = description_text
+        session.commit()
+        return True
+    return False    

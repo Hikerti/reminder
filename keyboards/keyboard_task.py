@@ -1,13 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-keyboards_create_task = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Отправить', callback_data='send_task')],
-    ]) 
-
-keyboard_function_task = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Изменить название', callback_data='delete_task'), InlineKeyboardButton(text='Изменить описание', callback_data='delete_task')],
-        [InlineKeyboardButton(text='Удалить задачу', callback_data='send_task')],
-    ])
+def keyboard_function_task(task_id: int):
+    return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text='Изменить название', callback_data=f'update_title_task:{task_id}'), InlineKeyboardButton(text='Изменить описание', callback_data=f'update_description_task:{task_id}')],
+            [InlineKeyboardButton(text='Удалить задачу', callback_data=f'delete_task:{task_id}')],
+        ])
 
 keyboard_finily_create_task = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Отправить', callback_data='send_task')],
